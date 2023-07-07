@@ -16,8 +16,8 @@ email.data
 ```json
 {
     "email_destinatario1": ["dados","do","destinatario"],
-    "email_destinatario2": ["dados","do","destinatario"],
-    "email_destinatario3": ["dados","do","destinatario"]
+    "email_destinatario2": ["dado1","dado2","dado3"],
+    "email_destinatario3": ["referencias","do","html"]
     ...
 } 
 ```
