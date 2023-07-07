@@ -68,9 +68,9 @@ except:
 	print('''
 		Não foi encontrado o arquivo de dados: "email.data"
 		{
-		"email_destinatario1": ["dados","do","destinatario"]
-		"email_destinatario2": ["dados","do","destinatario"]
-		"email_destinatario3": ["dados","do","destinatario"]
+		"email_destinatario1": ["dados","do","destinatario"],
+		"email_destinatario2": ["dados","do","destinatario"],
+		"email_destinatario3": ["dados","do","destinatario"],
        		...
 		}    
 	''')
