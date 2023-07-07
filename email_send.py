@@ -1,65 +1,92 @@
 import smtplib
-import base64
+import json
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.image import MIMEImage
 
-def enviar_email(destinatario, nome, chave_acesso):
-    # Configurações do servidor SMTP
-    servidor_smtp = 'smtp.gmail.com'  # Servidor SMTP do Gmail
-    porta_smtp = 587  # Porta do servidor SMTP do Gmail
-    usuario = 'seu_email@gmail.com'  # Seu endereço de e-mail do Gmail
-    senha = 'sua_senha_de_aplicativo'  # Senha de aplicativo gerada para o script Python
+def send_email(config, recipient, data, html, image):
 
-    # Construindo a mensagem do e-mail
-    mensagem = MIMEMultipart()
-    mensagem['Subject'] = 'Mensagem Importante'  # Assunto do e-mail
-    mensagem['From'] = usuario  # Remetente
-    mensagem['To'] = destinatario  # Destinatário
+	# Construindo a message do e-mail
+	message = MIMEMultipart()
+	message['Subject'] = 'Teste BOT [5]'  # Assunto do e-mail
+	message['From'] = config['usuario']  # Remetente
+	message['To'] = recipient  # Destinatário
 
-    # Texto do e-mail
-    texto = f'Olá {nome}!\n\nSua chave de acesso é: {chave_acesso}\n\nAtenciosamente,\nSua Empresa'
-    mensagem_texto = MIMEText(texto, 'plain')
-    mensagem.attach(mensagem_texto)
+	# Texto do e-mail
+	# texto = f'Olá {data[0]}!\n\nSua chave de acesso é: {data[1]}\n\nAtenciosamente,\nSua Empresa'
+	# message_texto = MIMEText(texto, 'plain')
+	# message.attach(message_texto)
 
-    # Anexando a imagem
-    with open('caminho_da_imagem.png', 'rb') as arquivo:
-        imagem = MIMEImage(arquivo.read())
-        imagem.add_header('Content-ID', '<imagem>')
-        mensagem.attach(imagem)
+	# Anexando a imagem
+	# with open('image.jpg', 'rb') as arquivo:
+	# 	imagem = MIMEImage(arquivo.read())
+	# 	print(type(imagem))
+	# 	imagem.add_header('Content-ID', '<imagem>')
+	message.attach(image)
 
-    # Construindo o conteúdo HTML do e-mail
-    conteudo_html = f'''
-        <html>
-            <body>
-                <p>Olá {nome}!</p>
-                <p>Aqui está a sua chave de acesso: {chave_acesso}</p>
-                <p>Atenciosamente,<br>Sua Empresa</p>
-                <p><img src="cid:imagem" alt="Imagem incorporada"></p>
-            </body>
-        </html>
-    '''
-    mensagem_html = MIMEText(conteudo_html, 'html')
-    mensagem.attach(mensagem_html)
+	# with open('email_body.html', encoding='utf-8') as file:
+	# 	conteudo_html = file.read().format(*data)
+	# 	# print(conteudo_html)
+	message_html = MIMEText(html.format(*data), 'html')
+	message.attach(message_html)
 
-    # Estabelecendo conexão com o servidor SMTP
-    servidor = smtplib.SMTP(servidor_smtp, porta_smtp)
-    servidor.starttls()
-    servidor.login(usuario, senha)
+	# Estabelecendo conexão com o servidor SMTP
+	servidor = smtplib.SMTP(config['servidor_smtp'], config['porta_smtp'])
+	servidor.starttls()
+	servidor.login(config['usuario'], config['senha'])
 
-    # Enviando o e-mail
-    servidor.send_message(mensagem)
+	# Enviando o e-mail
+	servidor.send_message(message)
 
-    # Encerrando a conexão com o servidor SMTP
-    servidor.quit()
+	# Encerrando a conexão com o servidor SMTP
+	servidor.quit()
 
-# Lista de destinatários, nomes e chaves de acesso
-destinatarios = ['email1@example.com', 'email2@example.com', 'email3@example.com']
-nomes = ['João', 'Maria', 'José']
-chaves_acesso = ['chave1', 'chave2', 'chave3']
+config = {}
+data = {}
+image = None
+html = ''
+
+try:
+	with open('email.config') as file:
+		config = json.loads(file.read())
+except:
+	print('''
+		Não foi encontrado o arquivo de configuração: "email.config"
+		{
+		"servidor_smtp": "smtp.gmail.com",
+		"porta_smtp": 587,
+		"usuario": "seu_email@gmail.com",
+		"senha": "senha_de_app"
+		}    
+	''')
+	quit()
+
+try:
+	with open('email.data') as file:
+		data = json.loads(file.read())
+except:
+	print('''
+		Não foi encontrado o arquivo de dados: "email.data"
+		{
+		"email_destinatario1": ["dados","do","destinatario"]
+		"email_destinatario2": ["dados","do","destinatario"]
+		"email_destinatario3": ["dados","do","destinatario"]
+       		...
+		}    
+	''')
+	quit()
+
+with open('image.jpg', 'rb') as arquivo:
+	image = MIMEImage(arquivo.read())
+	image.add_header('Content-ID', '<imagem>')
+	
+
+with open('email_body.html', encoding='utf-8') as file:
+	html = file.read()
 
 # Enviando e-mails individuais
-for destinatario, nome, chave_acesso in zip(destinatarios, nomes, chaves_acesso):
-    enviar_email(destinatario, nome, chave_acesso)
+
+for recipient in data:
+	send_email(config, recipient, data[recipient], html, image)
 
 print('E-mails enviados com sucesso!')
